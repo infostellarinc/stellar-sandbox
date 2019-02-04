@@ -9,7 +9,9 @@ Steps to run the basic example included:
 
 * Create virtualenv:
 
-  virtualenv --python python3 .stellar
+```
+virtualenv --python python3 .stellar
+```
 
 * Load virtualenv:
 
