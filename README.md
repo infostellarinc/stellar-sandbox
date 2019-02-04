@@ -8,7 +8,7 @@ Steps to run the basic example included (commands Debian):
 ```
 sudo apt update && sudo apt install python3 python3-virtualenv
 virtualenv --python python3 .stellar
-activate .stellar/bin/activate
+source .stellar/bin/activate
 pip install -r requirements.txt
 ```
 
