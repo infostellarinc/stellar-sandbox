@@ -15,7 +15,6 @@
 """The Python implementation of the gRPC stellarstation-api client."""
 
 
-import grpc
 import inspect
 import logging
 import os
@@ -110,7 +109,9 @@ class SatelliteChannel(object):
         This method creates a client for StellarStation's API.
         """
         home = os.path.expanduser('~')
-        key = os.path.join(home, '.infostellar/stellarstation-private-key.json')
+        key = os.path.join(
+            home, '.infostellar/stellarstation-private-key.json'
+        )
 
         credentials = gauth_jwt.Credentials.from_service_account_file(
             key, audience=self._url
@@ -179,14 +180,12 @@ class SatelliteChannel(object):
         """
         This method logs the available API services (methods / classes).
         """
-        self._services = {c[0]: c[1]
-            for c in inspect.getmembers(
-                stellarstation_pb2, predicate=inspect.isclass
-            )
-        }
+        self._services = {c[0]: c[1] for c in inspect.getmembers(
+            stellarstation_pb2, predicate=inspect.isclass
+        )}
 
-        self._gprcServices = [m
-            for m in dir(self.client)
+        self._gprcServices = [
+            m for m in dir(self.client)
             if callable(getattr(self.client, m)) and not m.startswith('__')
         ]
 
