@@ -40,6 +40,15 @@ def createBitstreamSatelliteChannel(satellite_id):
     )
 
 
+def createAnySatelliteChannel(satellite_id):
+    """Factory
+    This method creates a satellite channel object that exchanges bitstream
+    chunks of data in a bidirectional fashion. Users are responsible for the
+    correct serialization / deserialization of the packets through the stream.
+    """
+    return SatelliteChannel(satellite_id, None)
+
+
 def createAX25SatelliteChannel(satellite_id):
     """Factory
     This method creates a satellite channel object that exchanges AX25 packets
@@ -99,6 +108,12 @@ class SatelliteChannel(object):
 
         self.satellite_id = satellite_id
         self.framing = framing
+
+        if self.framing:
+            self._protocol_name = stellarstation_pb2.Framing.Name(self.framing)
+        else:
+            self._protocol_name = 'None'
+
         self._url = url
         self._channel_url = channel_url
 
@@ -110,7 +125,8 @@ class SatelliteChannel(object):
         """
         home = os.path.expanduser('~')
         key = os.path.join(
-            home, '.infostellar/stellarstation-private-key.json'
+            # home, '.infostellar/stellarstation-private-key.json'
+            home, '.infostellar/demo-private-key.json'
         )
 
         credentials = gauth_jwt.Credentials.from_service_account_file(
@@ -129,19 +145,22 @@ class SatelliteChannel(object):
 
         self._l.info(
             'Connected to (%s), satellite = %s, protocol = %s',
-            self._url,
-            self.satellite_id,
-            stellarstation_pb2.Framing.Name(self.framing)
+            self._url, self.satellite_id, self._protocol_name
         )
 
     def _createRequest(self):
         """
         This method creates a request for the satellite stream.
         """
-        yield stellarstation_pb2.SatelliteStreamRequest(
-            satellite_id=str(self.satellite_id),
-            accepted_framing=[self.framing]
-        )
+        if self.framing:
+            yield stellarstation_pb2.SatelliteStreamRequest(
+                satellite_id=str(self.satellite_id),
+                accepted_framing=[self.framing]
+            )
+        else:
+            yield stellarstation_pb2.SatelliteStreamRequest(
+                satellite_id=str(self.satellite_id)
+            )
 
     def getStream(self):
         """
@@ -169,8 +188,25 @@ class SatelliteChannel(object):
 
             try:
                 self._l.debug('Waiting for frames to arrive...')
-                for telemetry in self.stream:
-                    self._l.info('telemetry = <%s>', telemetry)
+
+                for response in self.stream:
+                    self._l.debug('response = <%s>', response)
+                    type = response.WhichOneof("Response")
+
+                    if type == 'receive_telemetry_response':
+                        self._l.info(
+                            'response::telemetry = <%s>',
+                            response.receive_telemetry_response.telemetry.data
+                        )
+                        continue
+
+                    if type == 'stream_event':
+                        self._l.info(
+                            'stream event::request_id <%s>',
+                            response.stream_event.request_id
+                        )
+                        continue
+
             except Exception as ex:
                 self._l.warn('Exception while waiting for TM, msg = %s', ex)
 
@@ -218,7 +254,7 @@ if __name__ == '__main__':
 
     # 61 is an example of an identifier for a satellite.
     # The class provided in this example is suppossed to be used like this:
-    satellite = createBitstreamSatelliteChannel(61)
+    satellite = createAnySatelliteChannel(98)
 
     # The following method can be called to print the available classes and
     # methods in the API.
