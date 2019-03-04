@@ -49,16 +49,6 @@ def createAnySatelliteChannel(satellite_id):
     return SatelliteChannel(satellite_id, None)
 
 
-def createAX25SatelliteChannel(satellite_id):
-    """Factory
-    This method creates a satellite channel object that exchanges AX25 packets
-    in between both ends.
-    """
-    return SatelliteChannel(
-        satellite_id, stellarstation_pb2.Framing.Value('AX25')
-    )
-
-
 def createIQSatelliteChannel(satellite_id):
     """Factory
     This method creates a satellite channel object that exchanges IQ data in
@@ -105,6 +95,13 @@ class SatelliteChannel(object):
         """
         self._l = logging.getLogger(self.__class__.__name__)
         self._l.setLevel(logging.DEBUG)
+
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        ch.setFormatter(logging.Formatter(
+            "%(asctime)s|%(levelname)s|%(message)s", "%Y-%m-%d %H:%M:%S"
+        ))
+        self._l.addHandler(ch)
 
         self.satellite_id = satellite_id
         self.framing = framing
@@ -255,6 +252,7 @@ if __name__ == '__main__':
     # 61 is an example of an identifier for a satellite.
     # The class provided in this example is suppossed to be used like this:
     satellite = createAnySatelliteChannel(98)
+    # createBitstreamSatelliteChannel # use this for decoded packets
 
     # The following method can be called to print the available classes and
     # methods in the API.
