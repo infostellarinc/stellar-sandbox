@@ -106,6 +106,9 @@ class SatelliteChannel(object):
         self.satellite_id = satellite_id
         self.framing = framing
 
+        self._l.info('framing = %s', framing)
+        self._l.info('framing = %s', self.framing)
+
         if self.framing:
             self._protocol_name = stellarstation_pb2.Framing.Name(self.framing)
         else:
@@ -149,14 +152,16 @@ class SatelliteChannel(object):
         """
         This method creates a request for the satellite stream.
         """
-        if self.framing:
+        if self.framing is None:
+            self._l.info('Satellite stream, framing ANY')
+            yield stellarstation_pb2.SatelliteStreamRequest(
+                satellite_id=str(self.satellite_id)
+            )
+        else:
+            self._l.info('Satellite stream, framing = %s', self.framing)
             yield stellarstation_pb2.SatelliteStreamRequest(
                 satellite_id=str(self.satellite_id),
                 accepted_framing=[self.framing]
-            )
-        else:
-            yield stellarstation_pb2.SatelliteStreamRequest(
-                satellite_id=str(self.satellite_id)
             )
 
     def getStream(self):
@@ -187,7 +192,7 @@ class SatelliteChannel(object):
                 self._l.debug('Waiting for frames to arrive...')
 
                 for response in self.stream:
-                    self._l.debug('response = <%s>', response)
+                    # self._l.debug('response = <%s>', response)
                     type = response.WhichOneof("Response")
 
                     if type == 'receive_telemetry_response':
@@ -251,7 +256,8 @@ if __name__ == '__main__':
 
     # 61 is an example of an identifier for a satellite.
     # The class provided in this example is suppossed to be used like this:
-    satellite = createAnySatelliteChannel(98)
+    # satellite = createAnySatelliteChannel(98)
+    satellite = createBitstreamSatelliteChannel(98)
     # createBitstreamSatelliteChannel # use this for decoded packets
 
     # The following method can be called to print the available classes and
