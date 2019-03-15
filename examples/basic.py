@@ -96,12 +96,12 @@ class SatelliteChannel(object):
         self._l = logging.getLogger(self.__class__.__name__)
         self._l.setLevel(logging.DEBUG)
 
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
-        ch.setFormatter(logging.Formatter(
-            "%(asctime)s|%(levelname)s|%(message)s", "%Y-%m-%d %H:%M:%S"
-        ))
-        self._l.addHandler(ch)
+        # ch = logging.StreamHandler()
+        # ch.setLevel(logging.DEBUG)
+        # ch.setFormatter(logging.Formatter(
+        #    "%(asctime)s|%(levelname)s|%(message)s", "%Y-%m-%d %H:%M:%S"
+        # ))
+        # self._l.addHandler(ch)
 
         self.satellite_id = satellite_id
         self.framing = framing
@@ -164,13 +164,17 @@ class SatelliteChannel(object):
                 accepted_framing=[self.framing]
             )
 
+        while True:
+            self._l.debug('.')
+            time.sleep(3000)
+
     def getStream(self):
         """
         This method returns a data stream for satellite telemetry read.
         """
         self.request = self._createRequest()
+        self._l.info('request = %s' % self.request)
         self.stream = self.client.OpenSatelliteStream(self.request)
-        return self.stream
 
     def logTelemetry(self, wait=True, retryTime=5):
         """
@@ -192,7 +196,6 @@ class SatelliteChannel(object):
                 self._l.debug('Waiting for frames to arrive...')
 
                 for response in self.stream:
-                    # self._l.debug('response = <%s>', response)
                     type = response.WhichOneof("Response")
 
                     if type == 'receive_telemetry_response':
@@ -203,7 +206,7 @@ class SatelliteChannel(object):
                         continue
 
                     if type == 'stream_event':
-                        self._l.info(
+                        self._l.debug(
                             'stream event::request_id <%s>',
                             response.stream_event.request_id
                         )
@@ -262,7 +265,7 @@ if __name__ == '__main__':
 
     # The following method can be called to print the available classes and
     # methods in the API.
-    satellite.printServices()
+    # satellite.printServices()
 
     # The following method can be used to send telecommands to the satellite
     # satellite.sendTelecommand([b'05050505'])
