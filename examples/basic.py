@@ -96,13 +96,6 @@ class SatelliteChannel(object):
         self._l = logging.getLogger(self.__class__.__name__)
         self._l.setLevel(logging.DEBUG)
 
-        # ch = logging.StreamHandler()
-        # ch.setLevel(logging.DEBUG)
-        # ch.setFormatter(logging.Formatter(
-        #    "%(asctime)s|%(levelname)s|%(message)s", "%Y-%m-%d %H:%M:%S"
-        # ))
-        # self._l.addHandler(ch)
-
         self.satellite_id = satellite_id
         self.framing = framing
 
@@ -164,6 +157,7 @@ class SatelliteChannel(object):
                 accepted_framing=[self.framing]
             )
 
+        # Leaves the generator open and the stream is not closed
         while True:
             self._l.debug('.')
             time.sleep(3000)
@@ -202,6 +196,7 @@ class SatelliteChannel(object):
                         self._l.info(
                             'response::telemetry = <%s>',
                             response.receive_telemetry_response.telemetry.data
+                            .hex()
                         )
                         continue
 
