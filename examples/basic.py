@@ -152,7 +152,7 @@ class SatelliteChannel(object):
         # notice # For connecting with an external service, it is recommended to retrieve the stream through
                     "getStream()" and to iterate over it like it is done in this function.
         """
-        while wait:
+        while True:
 
             try:
                 self.getStream()
@@ -176,6 +176,9 @@ class SatelliteChannel(object):
                 self._die = True
                 time.sleep(retryTime)
                 self._createSecureChannel()
+
+            if not wait:
+                break
 
     def printServices(self):
         """This method logs the available API services (methods / classes)"""

@@ -19,7 +19,7 @@ import unittest
 from unittest.mock import patch
 
 from examples import basic
-from examples.tests.mock.grpc import MockStreamWithEx
+from examples.tests.mock.grpc import MockStreamWithEx, MockFraming
 
 
 class test_Basic(unittest.TestCase):
@@ -27,15 +27,17 @@ class test_Basic(unittest.TestCase):
 
     @patch('examples.basic.gauth_jwt')
     @patch('examples.basic.gauth_grpc')
+    @patch('examples.basic.stellarstation_pb2')
     @patch('examples.basic.stellarstation_pb2_grpc')
-    def test_reconnect(self, mock_pb2, mock_grpc, mock_jwt):
+    def test_reconnect(self, mock_pb2_grpc, mock_pb2, mock_grpc, mock_jwt):
         """Basic reconnection test"""
 
         mock_jwt.Credentials.from_service_account_file.return_value = None
         mock_jwt.OnDemandCredentials.from_signing_credentials.return_value = None
         mock_grpc.secure_authorized_channel.return_value = None
-        mock_pb2.StellarStationServiceStub.return_value = MockStreamWithEx()
-        mock_pb2.SatelliteStreamRequest.return_value = None
+        mock_pb2.Framing = MockFraming()
+        mock_pb2_grpc.StellarStationServiceStub.return_value = MockStreamWithEx()
+        mock_pb2_grpc.SatelliteStreamRequest.return_value = None
 
         try:
             satellite = basic.createBitstreamSatelliteChannel(98)

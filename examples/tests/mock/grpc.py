@@ -42,13 +42,16 @@ class EventStream(PacketStream):
         self.stream_event = StreamEvent()
 
 
-class MockStreamWithEx():
+class MockFraming():
+    def Value(self, value):
+        return 0
 
+
+class MockStreamWithEx():
     def OpenSatelliteStream(self, request):
         raise Exception()
 
 
 class MockStream():
-
     def OpenSatelliteStream(self, request):
         return [PacketStream(), EventStream()]
