@@ -172,11 +172,10 @@ class SatelliteChannel(object):
                         continue
 
             except Exception as ex:
-                self._l.warn('Exception while waiting for TM, msg = %s', ex)
+                self._l.warning('Exception while waiting for TM, msg = %s', ex)
                 self._die = True
+                time.sleep(retryTime)
                 self._createSecureChannel()
-
-            time.sleep(retryTime)
 
     def printServices(self):
         """This method logs the available API services (methods / classes)"""
